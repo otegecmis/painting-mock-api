@@ -1,5 +1,10 @@
-var builder = WebApplication.CreateBuilder(args);
+using MockAPI.Data;
+using MockAPI.Endpoints;
 
+var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("PaintingMockAPI");
+
+builder.Services.AddSqlite<PaintingContext>(connectionString);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -14,6 +19,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapGet("/", () => "Hello World!");
+app.MapArtistsEndpoints().WithTags("Artists");
+app.MapMuseumsEndpoints().WithTags("Museums");
+app.MapPaintingsEndpoints().WithTags("Paintings");
+
+await app.MigrateDbAsync();
 
 app.Run();
