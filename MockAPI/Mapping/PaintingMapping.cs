@@ -14,4 +14,25 @@ public static class PaintingMapping
             painting.Museum.Name
         );
     }
+
+    public static Painting ToEntity(this CreatePaintingDTO painting)
+    {
+        return new Painting
+        {
+            Name = painting.Name,
+            ArtistId = painting.ArtistId,
+            MuseumId = painting.MuseumId
+        };
+    }
+
+    public static Painting ToEntity(this UpdatePaintingDTO painting, int id)
+    {
+        return new Painting
+        {
+            Id = id,
+            Name = painting.Name,
+            ArtistId = painting.ArtistId,
+            MuseumId = painting.MuseumId
+        };
+    }
 }
