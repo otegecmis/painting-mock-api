@@ -17,4 +17,21 @@ public static class MuseumMapping
             )).ToList()
         );
     }
+
+    public static Museum ToEntity(this CreateMuseumDTO museum)
+    {
+        return new Museum()
+        {
+            Name = museum.Name
+        };
+    }
+
+    public static Museum ToEntity(this UpdateMuseumDTO updatedMuseum, int Id)
+    {
+        return new Museum()
+        {
+            Id = Id,
+            Name = updatedMuseum.Name
+        };
+    }
 }
