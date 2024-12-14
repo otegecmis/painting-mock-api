@@ -17,4 +17,21 @@ public static class ArtistMapping
              )).ToList()
          );
     }
+
+    public static Artist ToEntity(this CreateArtistDTO artist)
+    {
+        return new Artist()
+        {
+            Name = artist.Name
+        };
+    }
+
+    public static Artist ToEntity(this UpdateArtistDTO updatedArtist, int Id)
+    {
+        return new Artist()
+        {
+            Id = Id,
+            Name = updatedArtist.Name
+        };
+    }
 }
