@@ -1,8 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using MockAPI.Data;
 using MockAPI.DTOs;
-using MockAPI.Entities;
-using MockAPI.Mapping;
+using MockAPI.Services;
 
 namespace MockAPI.Endpoints;
 
@@ -15,68 +12,50 @@ public static class PaintingsEndpoints
 
         group.WithTags("Paintings");
 
-        group.MapGet("/", async (PaintingContext dbContext) =>
+        group.MapGet("/", async (IPaintingService paintingService) =>
         {
-            var paintings = await dbContext.Paintings
-                                  .Include(p => p.Artist)
-                                  .Include(p => p.Museum)
-                                  .AsNoTracking()
-                                  .Select(p => p.ToPaintingDetailDTO())
-                                  .ToListAsync();
-
+            var paintings = await paintingService.GetAllPaintingsAsync();
             return Results.Ok(paintings);
         });
 
-        group.MapGet("/{id}", async (int id, PaintingContext dbContext) =>
+        group.MapGet("/{Id}", async (int Id, IPaintingService paintingService) =>
         {
-            var painting = await dbContext.Paintings
-                                          .Include(p => p.Artist)
-                                          .Include(p => p.Museum)
-                                          .FirstOrDefaultAsync(p => p.Id == id);
+            var painting = await paintingService.GetPaintingByIdAsync(Id);
 
             if (painting is null)
             {
                 return Results.NotFound();
             }
 
-            return Results.Ok(painting.ToPaintingDetailDTO());
+            return Results.Ok(painting);
         }).WithName(getPaintingEndpointName);
 
-        group.MapPost("/", async (CreatePaintingDTO newPainting, PaintingContext dbContext) =>
+        group.MapPost("/", async (CreatePaintingDTO createdPainting, IPaintingService paintingService) =>
         {
-            Painting painting = newPainting.ToEntity();
-            dbContext.Paintings.Add(painting);
-
-            await dbContext.SaveChangesAsync();
+            var painting = await paintingService.CreatePaintingAsync(createdPainting);
             return Results.CreatedAtRoute(getPaintingEndpointName, new { Id = painting.Id }, painting);
         });
 
-        group.MapPut("/{id}", async (int id, UpdatePaintingDTO updatedPainting, PaintingContext dbContext) =>
+        group.MapPut("/{Id}", async (int Id, UpdatePaintingDTO updatedPainting, IPaintingService paintingService) =>
         {
-            var existingPainting = await dbContext.Paintings.FindAsync(id);
+            var painting = await paintingService.UpdatePaintingAsync(Id, updatedPainting);
 
-            if (existingPainting is null)
+            if (!painting)
             {
                 return Results.NotFound();
             }
-
-            dbContext.Entry(existingPainting).CurrentValues.SetValues(updatedPainting.ToEntity(id));
-            await dbContext.SaveChangesAsync();
 
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id}", async (int id, PaintingContext dbContext) =>
+        group.MapDelete("/{Id}", async (int Id, IPaintingService paintingService) =>
         {
-            var existingPainting = await dbContext.Paintings.FindAsync(id);
+            var painting = await paintingService.DeletePaintingAsync(Id);
 
-            if (existingPainting is null)
+            if (!painting)
             {
                 return Results.NotFound();
             }
-
-            dbContext.Paintings.Remove(existingPainting);
-            await dbContext.SaveChangesAsync();
 
             return Results.NoContent();
         });

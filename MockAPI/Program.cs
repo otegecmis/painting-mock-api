@@ -1,5 +1,6 @@
 using MockAPI.Data;
 using MockAPI.Endpoints;
+using MockAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("PaintingMockAPI");
@@ -7,6 +8,9 @@ var connectionString = builder.Configuration.GetConnectionString("PaintingMockAP
 builder.Services.AddSqlite<PaintingContext>(connectionString);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IPaintingService, PaintingService>();
+builder.Services.AddScoped<IArtistsService, ArtistsService>();
 
 var app = builder.Build();
 

@@ -1,8 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using MockAPI.Data;
 using MockAPI.DTOs;
-using MockAPI.Entities;
-using MockAPI.Mapping;
+using MockAPI.Services;
 
 namespace MockAPI.Endpoints;
 
@@ -15,76 +12,59 @@ public static class ArtistsEndpoints
 
         group.WithTags("artists");
 
-        group.MapGet("/", async (PaintingContext dbContext) =>
+        group.MapGet("/", async (IArtistsService artistsService) =>
         {
-            var artists = await dbContext.Artists
-                                         .Include(m => m.Paintings)
-                                         .ThenInclude(p => p.Museum)
-                                         .AsNoTracking()
-                                         .Select(a => a.ToArtistDetailDTO())
-                                         .ToListAsync();
-
+            var artists = await artistsService.GetAllArtistsAsync();
             return Results.Ok(artists);
         });
 
-        group.MapGet("/{id}", async (int id, PaintingContext dbContext) =>
+        group.MapGet("/{id}", async (int Id, IArtistsService artistsService) =>
         {
-            var artist = await dbContext.Artists
-                                        .Include(a => a.Paintings)
-                                        .ThenInclude(p => p.Museum)
-                                        .FirstOrDefaultAsync(a => a.Id == id);
+            var artist = await artistsService.GetArtistByIdAsync(Id);
 
             if (artist is null)
             {
                 return Results.NotFound();
             }
 
-            return Results.Ok(artist!.ToArtistDetailDTO());
+            return Results.Ok(artist);
         }).WithName(getArtistEndpointName);
 
-        group.MapPost("/", async (CreateArtistDTO newArtist, PaintingContext dbContext) =>
+        group.MapPost("/", async (CreateArtistDTO createdArtist, IArtistsService artistsService) =>
         {
-            Artist artist = newArtist.ToEntity();
-            dbContext.Artists.Add(artist);
-
-            await dbContext.SaveChangesAsync();
-
+            var artist = await artistsService.CreateArtistAsync(createdArtist);
             return Results.CreatedAtRoute(getArtistEndpointName, new { Id = artist.Id }, artist);
         });
 
-        group.MapPut("/{id}", async (int Id, UpdateArtistDTO updatedArtist, PaintingContext dbContext) =>
+        group.MapPut("/{id}", async (int Id, UpdateArtistDTO updatedArtist, IArtistsService artistsService) =>
         {
-            var existingArtist = await dbContext.Artists.FindAsync(Id);
+            var artist = await artistsService.UpdateArtistAsync(Id, updatedArtist);
 
-            if (existingArtist is null)
+            if (!artist)
             {
                 return Results.NotFound();
             }
-
-            dbContext.Entry(existingArtist).CurrentValues.SetValues(updatedArtist.ToEntity(Id));
-            await dbContext.SaveChangesAsync();
 
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id}", async (int id, PaintingContext dbContext) =>
+        group.MapDelete("/{id}", async (int Id, IArtistsService artistsService) =>
         {
-            var existingArtist = await dbContext.Artists.FindAsync(id);
-
-            if (existingArtist is null)
+            try
             {
-                return Results.NotFound();
+                var deleteResult = await artistsService.DeleteArtistAsync(Id);
+
+                if (!deleteResult)
+                {
+                    return Results.NotFound();
+                }
+
+                return Results.NoContent();
             }
-
-            var countPaintings = dbContext.Paintings.Where(p => p.Artist.Id == id).Count();
-
-            if (countPaintings > 0)
+            catch (InvalidOperationException ex)
             {
-                return Results.BadRequest("Cannot delete artist with paintings.");
+                return Results.BadRequest(ex.Message);
             }
-
-            await dbContext.Artists.Where(artist => artist.Id == id).ExecuteDeleteAsync();
-            return Results.NoContent();
         });
 
         return group;

@@ -1,8 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using MockAPI.Data;
 using MockAPI.DTOs;
-using MockAPI.Entities;
-using MockAPI.Mapping;
+using MockAPI.Services;
 
 namespace MockAPI.Endpoints;
 
@@ -15,72 +12,62 @@ public static class MuseumsEndpoints
 
         group.WithTags("museums");
 
-        group.MapGet("/", async (PaintingContext dbContext) =>
+        group.MapGet("/", async (IMuseumsService museumsService) =>
         {
-            var museums = await dbContext.Museums
-                                  .Include(m => m.Paintings)
-                                  .ThenInclude(p => p.Artist)
-                                  .AsNoTracking()
-                                  .Select(m => m.ToMuseumDetailDTO())
-                                  .ToListAsync();
+            var museums = await museumsService.GetAllMuseumsAsync();
 
             return Results.Ok(museums);
         });
 
-        group.MapGet("/{id}", async (int Id, PaintingContext dbContext) =>
+        group.MapGet("/{id}", async (int Id, IMuseumsService museumsService) =>
         {
-            var museum = await dbContext.Museums.Include(m => m.Paintings)
-                                                .ThenInclude(m => m.Artist)
-                                                .FirstOrDefaultAsync(m => m.Id == Id);
+            var museum = await museumsService.GetMuseumByIdAsync(Id);
 
             if (museum is null)
             {
                 return Results.NotFound();
             }
 
-            return Results.Ok(museum.ToMuseumDetailDTO());
+            return Results.Ok(museum);
         }).WithName(getMuseumEndpointName);
 
-        group.MapPost("/", async (CreateMuseumDTO newMuseum, PaintingContext dbContext) =>
+        group.MapPost("/", async (CreateMuseumDTO createMuseum, IMuseumsService museumsService) =>
         {
-            Museum museum = newMuseum.ToEntity();
-            dbContext.Museums.Add(museum);
+            var museum = await museumsService.CreateMuseumAsync(createMuseum);
 
-            await dbContext.SaveChangesAsync();
             return Results.CreatedAtRoute(getMuseumEndpointName, new { Id = museum.Id }, museum);
         });
 
-        group.MapPut("/{Id}", async (int Id, UpdateMuseumDTO updatedMuseum, PaintingContext dbContext) =>
+        group.MapPut("/{Id}", async (int Id, UpdateMuseumDTO updatedMuseum, IMuseumsService museumsService) =>
         {
-            var existingMuseum = await dbContext.Museums.FindAsync(Id);
+            var existingMuseum = await museumsService.UpdateMuseumAsync(Id, updatedMuseum);
 
-            if (existingMuseum is null)
+            if (!existingMuseum)
             {
                 return Results.NotFound();
             }
 
-            dbContext.Entry(existingMuseum).CurrentValues.SetValues(updatedMuseum.ToEntity(Id));
             return Results.NoContent();
         });
 
-        group.MapDelete("/{Id}", async (int Id, PaintingContext dbContext) =>
+        group.MapDelete("/{Id}", async (int Id, IMuseumsService museumsService) =>
         {
-            var existingMuseum = await dbContext.Museums.FindAsync(Id);
-
-            if (existingMuseum is null)
+            try
             {
-                return Results.NotFound();
+                var deleteResult = await museumsService.DeleteMuseumAsync(Id);
+
+                if (!deleteResult)
+                {
+                    return Results.NotFound();
+                }
+
+                return Results.NoContent();
             }
-
-            var countPaintings = dbContext.Paintings.Where(m => m.Museum.Id == Id).Count();
-
-            if (countPaintings > 0)
+            catch (InvalidOperationException ex)
             {
-                return Results.BadRequest("Cannot delete museum with paintings.");
-            }
 
-            await dbContext.Museums.Where(museum => museum.Id == Id).ExecuteDeleteAsync();
-            return Results.NoContent();
+                return Results.BadRequest(ex.Message);
+            }
         });
 
         return group;
