@@ -27,3 +27,7 @@ dotnet run
 ### API Documentation
 
 Access `Swagger UI` at `/swagger` to test the API.
+
+<div style="float: left;">
+    <img src="Assets/Swagger.png" style="width: 80%;" />
+</div>
