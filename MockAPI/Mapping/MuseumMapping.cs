@@ -1,5 +1,5 @@
-using MockAPI.DTOs;
 using MockAPI.Entities;
+using MockAPI.DTOs;
 
 namespace MockAPI.Mapping;
 
@@ -10,10 +10,10 @@ public static class MuseumMapping
         return new(
             museum.Id,
             museum.Name,
-            museum.Paintings?.Select(p => new PaintingWithoutMuseumDTO(
-                p.Id,
-                p.Name,
-                p.Artist.Name
+            museum.Paintings?.Select(painting => new PaintingWithoutMuseumDTO(
+                painting.Id,
+                painting.Name,
+                painting.Artist.Name
             )).ToList()
         );
     }

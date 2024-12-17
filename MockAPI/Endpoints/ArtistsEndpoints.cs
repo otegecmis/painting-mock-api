@@ -8,19 +8,19 @@ public static class ArtistsEndpoints
     public static RouteGroupBuilder MapArtistsEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("artists");
-        var getArtistEndpointName = "GetArtist";
+        var getArtistEndpoint = "GetArtist";
 
         group.WithTags("artists");
 
         group.MapGet("/", async (IArtistsService artistsService) =>
         {
-            var artists = await artistsService.GetAllArtistsAsync();
+            var artists = await artistsService.GetArtists();
             return Results.Ok(artists);
         });
 
         group.MapGet("/{id}", async (int Id, IArtistsService artistsService) =>
         {
-            var artist = await artistsService.GetArtistByIdAsync(Id);
+            var artist = await artistsService.GetArtistById(Id);
 
             if (artist is null)
             {
@@ -28,17 +28,17 @@ public static class ArtistsEndpoints
             }
 
             return Results.Ok(artist);
-        }).WithName(getArtistEndpointName);
+        }).WithName(getArtistEndpoint);
 
         group.MapPost("/", async (CreateArtistDTO createdArtist, IArtistsService artistsService) =>
         {
-            var artist = await artistsService.CreateArtistAsync(createdArtist);
-            return Results.CreatedAtRoute(getArtistEndpointName, new { Id = artist.Id }, artist);
+            var artist = await artistsService.CreateArtist(createdArtist);
+            return Results.CreatedAtRoute(getArtistEndpoint, new { Id = artist.Id }, artist);
         });
 
         group.MapPut("/{id}", async (int Id, UpdateArtistDTO updatedArtist, IArtistsService artistsService) =>
         {
-            var artist = await artistsService.UpdateArtistAsync(Id, updatedArtist);
+            var artist = await artistsService.UpdateArtist(Id, updatedArtist);
 
             if (!artist)
             {
@@ -52,9 +52,9 @@ public static class ArtistsEndpoints
         {
             try
             {
-                var deleteResult = await artistsService.DeleteArtistAsync(Id);
+                var artist = await artistsService.DeleteArtist(Id);
 
-                if (!deleteResult)
+                if (!artist)
                 {
                     return Results.NotFound();
                 }

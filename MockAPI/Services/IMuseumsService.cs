@@ -1,13 +1,13 @@
-using MockAPI.DTOs;
 using MockAPI.Entities;
+using MockAPI.DTOs;
 
 namespace MockAPI.Services;
 
 public interface IMuseumsService
 {
-    Task<List<MuseumDTO>> GetAllMuseumsAsync();
-    Task<MuseumDTO?> GetMuseumByIdAsync(int Id);
-    Task<Museum> CreateMuseumAsync(CreateMuseumDTO createdMuseum);
-    Task<bool> UpdateMuseumAsync(int Id, UpdateMuseumDTO updatedMuseum);
-    Task<bool> DeleteMuseumAsync(int Id);
+    Task<List<MuseumDTO>> GetMuseums();
+    Task<MuseumDTO?> GetMuseumById(int Id);
+    Task<Museum> CreateMuseum(CreateMuseumDTO createdMuseum);
+    Task<bool> UpdateMuseum(int Id, UpdateMuseumDTO updatedMuseum);
+    Task<bool> DeleteMuseum(int Id);
 }

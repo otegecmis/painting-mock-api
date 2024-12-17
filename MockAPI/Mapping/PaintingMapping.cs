@@ -1,5 +1,5 @@
-using MockAPI.DTOs;
 using MockAPI.Entities;
+using MockAPI.DTOs;
 
 namespace MockAPI.Mapping;
 

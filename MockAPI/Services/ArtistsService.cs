@@ -1,77 +1,82 @@
+using Microsoft.EntityFrameworkCore;
 using MockAPI.Data;
+using MockAPI.Entities;
 using MockAPI.DTOs;
 using MockAPI.Mapping;
-using Microsoft.EntityFrameworkCore;
-using MockAPI.Entities;
 
 namespace MockAPI.Services;
 
 public class ArtistsService : IArtistsService
 {
-    private readonly PaintingContext _dbContext;
+    private readonly PaintingContext _context;
 
-    public ArtistsService(PaintingContext dbContext)
+    public ArtistsService(PaintingContext context)
     {
-        _dbContext = dbContext;
+        _context = context;
     }
 
-    public async Task<List<ArtistDTO>> GetAllArtistsAsync()
+    public async Task<List<ArtistDTO>> GetArtists()
     {
-        var artists = await _dbContext.Artists.Include(m => m.Paintings).ThenInclude(p => p.Museum).AsNoTracking().Select(a => a.ToArtistDetailDTO()).ToListAsync();
+        var artists = await _context.Artists.Include(artist => artist.Paintings)
+                                            .ThenInclude(painting => painting.Museum)
+                                            .AsNoTracking()
+                                            .Select(artist => artist.ToArtistDetailDTO())
+                                            .ToListAsync();
 
         return artists;
     }
 
-    public async Task<ArtistDTO?> GetArtistByIdAsync(int Id)
+    public async Task<ArtistDTO?> GetArtistById(int Id)
     {
-        var artist = await _dbContext.Artists.Include(a => a.Paintings).ThenInclude(p => p.Museum).FirstOrDefaultAsync(a => a.Id == Id);
+        var artist = await _context.Artists.Include(artist => artist.Paintings)
+                                           .ThenInclude(painting => painting.Museum)
+                                           .FirstOrDefaultAsync(artist => artist.Id == Id);
 
         return artist?.ToArtistDetailDTO();
     }
 
-    public async Task<Artist> CreateArtistAsync(CreateArtistDTO createdArtist)
+    public async Task<Artist> CreateArtist(CreateArtistDTO createdArtist)
     {
         Artist artist = createdArtist.ToEntity();
-        _dbContext.Artists.Add(artist);
-
-        await _dbContext.SaveChangesAsync();
+        _context.Artists.Add(artist);
+        await _context.SaveChangesAsync();
 
         return artist;
     }
 
-    public async Task<bool> UpdateArtistAsync(int Id, UpdateArtistDTO updatedArtist)
+    public async Task<bool> UpdateArtist(int Id, UpdateArtistDTO updatedArtist)
     {
-        var existingArtist = await _dbContext.Artists.FindAsync(Id);
+        var existingArtist = await _context.Artists.FindAsync(Id);
 
         if (existingArtist is null)
         {
             return false;
         }
 
-        _dbContext.Entry(existingArtist).CurrentValues.SetValues(updatedArtist.ToEntity(Id));
-        await _dbContext.SaveChangesAsync();
+        _context.Entry(existingArtist).CurrentValues.SetValues(updatedArtist.ToEntity(Id));
+        await _context.SaveChangesAsync();
 
         return true;
     }
 
-    public async Task<bool> DeleteArtistAsync(int Id)
+    public async Task<bool> DeleteArtist(int Id)
     {
-        var existingArtist = await _dbContext.Artists.FindAsync(Id);
+        var existingArtist = await _context.Artists.FindAsync(Id);
 
         if (existingArtist is null)
         {
             return false;
         }
 
-        var countPaintings = await _dbContext.Paintings.Where(p => p.Artist.Id == Id).CountAsync();
+        var countPaintings = await _context.Paintings.Where(painting => painting.Artist.Id == Id).CountAsync();
 
         if (countPaintings > 0)
         {
-            throw new InvalidOperationException("Cannot delete artist with paintings.");
+            throw new InvalidOperationException("Cannot delete artist.");
         }
 
-        _dbContext.Artists.Remove(existingArtist);
-        await _dbContext.SaveChangesAsync();
+        _context.Artists.Remove(existingArtist);
+        await _context.SaveChangesAsync();
 
         return true;
     }
