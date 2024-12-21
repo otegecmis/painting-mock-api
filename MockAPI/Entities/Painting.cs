@@ -2,11 +2,11 @@ namespace MockAPI.Entities;
 
 public class Painting
 {
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public int ArtistId { get; set; }
-    public int MuseumId { get; set; }
+    public int Id { get; init; }
+    public required string Name { get; init; }
+    public int ArtistId { get; init; }
+    public int MuseumId { get; init; }
 
-    public Artist Artist { get; set; } = null!;
-    public Museum Museum { get; set; } = null!;
+    public Artist Artist { get; init; } = null!;
+    public Museum Museum { get; init; } = null!;
 }

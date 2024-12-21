@@ -1,4 +1,4 @@
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 using MockAPI.Services;
 
 namespace MockAPI.Endpoints;
@@ -8,7 +8,7 @@ public static class ArtistsEndpoints
     public static RouteGroupBuilder MapArtistsEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("artists");
-        var getArtistEndpoint = "GetArtist";
+        const string getArtistEndpoint = "GetArtist";
 
         group.WithTags("artists");
 
@@ -18,48 +18,30 @@ public static class ArtistsEndpoints
             return Results.Ok(artists);
         });
 
-        group.MapGet("/{id}", async (int Id, IArtistsService artistsService) =>
+        group.MapGet("/{id:int}", async (int id, IArtistsService artistsService) =>
         {
-            var artist = await artistsService.GetArtistById(Id);
-
-            if (artist is null)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Ok(artist);
+            var artist = await artistsService.GetArtistById(id);
+            return artist is null ? Results.NotFound() : Results.Ok(artist);
         }).WithName(getArtistEndpoint);
 
-        group.MapPost("/", async (CreateArtistDTO createdArtist, IArtistsService artistsService) =>
+        group.MapPost("/", async (CreateArtistDto createdArtist, IArtistsService artistsService) =>
         {
             var artist = await artistsService.CreateArtist(createdArtist);
-            return Results.CreatedAtRoute(getArtistEndpoint, new { Id = artist.Id }, artist);
+            return Results.CreatedAtRoute(getArtistEndpoint, new { artist.Id }, artist);
         });
 
-        group.MapPut("/{id}", async (int Id, UpdateArtistDTO updatedArtist, IArtistsService artistsService) =>
+        group.MapPut("/{id:int}", async (int id, UpdateArtistDto updatedArtist, IArtistsService artistsService) =>
         {
-            var artist = await artistsService.UpdateArtist(Id, updatedArtist);
-
-            if (!artist)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.NoContent();
+            var artist = await artistsService.UpdateArtistById(id, updatedArtist);
+            return !artist ? Results.NotFound() : Results.NoContent();
         });
 
-        group.MapDelete("/{id}", async (int Id, IArtistsService artistsService) =>
+        group.MapDelete("/{id:int}", async (int id, IArtistsService artistsService) =>
         {
             try
             {
-                var artist = await artistsService.DeleteArtist(Id);
-
-                if (!artist)
-                {
-                    return Results.NotFound();
-                }
-
-                return Results.NoContent();
+                var artist = await artistsService.DeleteArtistById(id);
+                return !artist ? Results.NotFound() : Results.NoContent();
             }
             catch (InvalidOperationException ex)
             {

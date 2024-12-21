@@ -1,4 +1,4 @@
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 using MockAPI.Services;
 
 namespace MockAPI.Endpoints;
@@ -8,7 +8,7 @@ public static class PaintingsEndpoints
     public static RouteGroupBuilder MapPaintingsEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("paintings");
-        var getPaintingEndpoint = "GetPainting";
+        const string getPaintingEndpoint = "GetPainting";
 
         group.WithTags("Paintings");
 
@@ -18,46 +18,29 @@ public static class PaintingsEndpoints
             return Results.Ok(paintings);
         });
 
-        group.MapGet("/{Id}", async (int Id, IPaintingsService paintingService) =>
+        group.MapGet("/{id:int}", async (int id, IPaintingsService paintingService) =>
         {
-            var painting = await paintingService.GetPaintingById(Id);
-
-            if (painting is null)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Ok(painting);
+            var painting = await paintingService.GetPaintingById(id);
+            return painting is null ? Results.NotFound() : Results.Ok(painting);
         }).WithName(getPaintingEndpoint);
 
-        group.MapPost("/", async (CreatePaintingDTO createdPainting, IPaintingsService paintingService) =>
+        group.MapPost("/", async (CreatePaintingDto createdPainting, IPaintingsService paintingService) =>
         {
             var painting = await paintingService.CreatePainting(createdPainting);
             return Results.CreatedAtRoute(getPaintingEndpoint, new { Id = painting.Id }, painting);
         });
 
-        group.MapPut("/{Id}", async (int Id, UpdatePaintingDTO updatedPainting, IPaintingsService paintingService) =>
-        {
-            var painting = await paintingService.UpdatePainting(Id, updatedPainting);
-
-            if (!painting)
+        group.MapPut("/{id:int}",
+            async (int id, UpdatePaintingDto updatedPainting, IPaintingsService paintingService) =>
             {
-                return Results.NotFound();
-            }
+                var painting = await paintingService.UpdatePaintingById(id, updatedPainting);
+                return !painting ? Results.NotFound() : Results.NoContent();
+            });
 
-            return Results.NoContent();
-        });
-
-        group.MapDelete("/{Id}", async (int Id, IPaintingsService paintingService) =>
+        group.MapDelete("/{id:int}", async (int id, IPaintingsService paintingService) =>
         {
-            var painting = await paintingService.DeletePainting(Id);
-
-            if (!painting)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.NoContent();
+            var painting = await paintingService.DeletePaintingById(id);
+            return !painting ? Results.NotFound() : Results.NoContent();
         });
 
         return group;

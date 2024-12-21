@@ -1,16 +1,16 @@
 using MockAPI.Entities;
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 
 namespace MockAPI.Mapping;
 
 public static class MuseumMapping
 {
-    public static MuseumDTO ToMuseumDetailDTO(this Museum museum)
+    public static MuseumDto ToMuseumDetailDto(this Museum museum)
     {
-        return new(
+        return new MuseumDto(
             museum.Id,
             museum.Name,
-            museum.Paintings?.Select(painting => new PaintingWithoutMuseumDTO(
+            museum.Paintings.Select(painting => new PaintingWithoutMuseumDto(
                 painting.Id,
                 painting.Name,
                 painting.Artist.Name
@@ -18,7 +18,7 @@ public static class MuseumMapping
         );
     }
 
-    public static Museum ToEntity(this CreateMuseumDTO museum)
+    public static Museum ToEntity(this CreateMuseumDto museum)
     {
         return new Museum()
         {
@@ -26,11 +26,11 @@ public static class MuseumMapping
         };
     }
 
-    public static Museum ToEntity(this UpdateMuseumDTO updatedMuseum, int Id)
+    public static Museum ToEntity(this UpdateMuseumDto updatedMuseum, int id)
     {
         return new Museum()
         {
-            Id = Id,
+            Id = id,
             Name = updatedMuseum.Name
         };
     }

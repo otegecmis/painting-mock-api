@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MockAPI.Data;
 using MockAPI.Entities;
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 using MockAPI.Mapping;
 
 namespace MockAPI.Services;
@@ -15,67 +15,67 @@ public class MuseumsService : IMuseumsService
         _context = context;
     }
 
-    public async Task<List<MuseumDTO>> GetMuseums()
+    public async Task<List<MuseumDto>> GetMuseums()
     {
         var museums = await _context.Museums.Include(museum => museum.Paintings)
-                                            .ThenInclude(painting => painting.Artist)
-                                            .AsNoTracking()
-                                            .Select(museum => museum.ToMuseumDetailDTO())
-                                            .ToListAsync();
+            .ThenInclude(painting => painting.Artist)
+            .AsNoTracking()
+            .Select(museum => museum.ToMuseumDetailDto())
+            .ToListAsync();
 
         return museums;
     }
 
-    public async Task<MuseumDTO?> GetMuseumById(int Id)
+    public async Task<MuseumDto?> GetMuseumById(int id)
     {
         var museum = await _context.Museums.Include(museum => museum.Paintings)
-                                           .ThenInclude(painting => painting.Artist)
-                                           .FirstOrDefaultAsync(museum => museum.Id == Id);
+            .ThenInclude(painting => painting.Artist)
+            .FirstOrDefaultAsync(museum => museum.Id == id);
 
-        return museum?.ToMuseumDetailDTO();
+        return museum?.ToMuseumDetailDto();
     }
 
-    public async Task<Museum> CreateMuseum(CreateMuseumDTO createdMuseum)
+    public async Task<Museum> CreateMuseum(CreateMuseumDto createdMuseum)
     {
-        Museum museum = createdMuseum.ToEntity();
+        var museum = createdMuseum.ToEntity();
         _context.Museums.Add(museum);
         await _context.SaveChangesAsync();
 
         return museum;
     }
 
-    public async Task<bool> UpdateMuseum(int Id, UpdateMuseumDTO updatedMuseum)
+    public async Task<bool> UpdateMuseumById(int id, UpdateMuseumDto updatedMuseum)
     {
-        var existingMuseum = await _context.Museums.FindAsync(Id);
+        var existingMuseum = await _context.Museums.FindAsync(id);
 
         if (existingMuseum is null)
         {
             return false;
         }
 
-        _context.Entry(existingMuseum).CurrentValues.SetValues(updatedMuseum.ToEntity(Id));
+        _context.Entry(existingMuseum).CurrentValues.SetValues(updatedMuseum.ToEntity(id));
         await _context.SaveChangesAsync();
 
         return true;
     }
 
-    public async Task<bool> DeleteMuseum(int Id)
+    public async Task<bool> DeleteMuseumById(int id)
     {
-        var existingMuseum = await _context.Museums.FindAsync(Id);
+        var existingMuseum = await _context.Museums.FindAsync(id);
 
         if (existingMuseum is null)
         {
             return false;
         }
 
-        var countPaintings = _context.Paintings.Where(m => m.Museum.Id == Id).Count();
+        var countPaintings = _context.Paintings.Count(m => m.Museum.Id == id);
 
         if (countPaintings > 0)
         {
             throw new InvalidOperationException("Cannot delete museum.");
         }
 
-        await _context.Museums.Where(museum => museum.Id == Id).ExecuteDeleteAsync();
+        await _context.Museums.Where(museum => museum.Id == id).ExecuteDeleteAsync();
 
         return true;
     }

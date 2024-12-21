@@ -1,13 +1,13 @@
 using MockAPI.Entities;
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 
 namespace MockAPI.Services;
 
 public interface IArtistsService
 {
-    Task<List<ArtistDTO>> GetArtists();
-    Task<ArtistDTO?> GetArtistById(int Id);
-    Task<Artist> CreateArtist(CreateArtistDTO createdArtist);
-    Task<bool> UpdateArtist(int Id, UpdateArtistDTO updatedArtist);
-    Task<bool> DeleteArtist(int Id);
+    Task<List<ArtistDto>> GetArtists();
+    Task<ArtistDto?> GetArtistById(int id);
+    Task<Artist> CreateArtist(CreateArtistDto createdArtist);
+    Task<bool> UpdateArtistById(int id, UpdateArtistDto updatedArtist);
+    Task<bool> DeleteArtistById(int id);
 }

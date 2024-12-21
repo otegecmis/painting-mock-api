@@ -1,24 +1,24 @@
 using MockAPI.Entities;
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 
 namespace MockAPI.Mapping;
 
 public static class ArtistMapping
 {
-    public static ArtistDTO ToArtistDetailDTO(this Artist artist)
+    public static ArtistDto ToArtistDetailDto(this Artist artist)
     {
-        return new(
+        return new ArtistDto(
             artist.Id,
             artist.Name,
-            artist.Paintings?.Select(painting => new PaintingWithoutArtistDTO(
+            artist.Paintings?.Select(painting => new PaintingWithoutArtistDto(
                 painting.Id,
                 painting.Name,
                 painting.Museum.Name
             )).ToList()
-         );
+        );
     }
 
-    public static Artist ToEntity(this CreateArtistDTO artist)
+    public static Artist ToEntity(this CreateArtistDto artist)
     {
         return new Artist()
         {
@@ -26,11 +26,11 @@ public static class ArtistMapping
         };
     }
 
-    public static Artist ToEntity(this UpdateArtistDTO updatedArtist, int Id)
+    public static Artist ToEntity(this UpdateArtistDto updatedArtist, int id)
     {
         return new Artist()
         {
-            Id = Id,
+            Id = id,
             Name = updatedArtist.Name
         };
     }

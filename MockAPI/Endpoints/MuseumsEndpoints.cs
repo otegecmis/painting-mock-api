@@ -1,4 +1,4 @@
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 using MockAPI.Services;
 
 namespace MockAPI.Endpoints;
@@ -8,7 +8,7 @@ public static class MuseumsEndpoints
     public static RouteGroupBuilder MapMuseumsEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("museums");
-        var getMuseumEndpoint = "GetMuseum";
+        const string getMuseumEndpoint = "GetMuseum";
 
         group.WithTags("museums");
 
@@ -18,52 +18,33 @@ public static class MuseumsEndpoints
             return Results.Ok(museums);
         });
 
-        group.MapGet("/{id}", async (int Id, IMuseumsService museumsService) =>
+        group.MapGet("/{id:int}", async (int id, IMuseumsService museumsService) =>
         {
-            var museum = await museumsService.GetMuseumById(Id);
-
-            if (museum is null)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Ok(museum);
+            var museum = await museumsService.GetMuseumById(id);
+            return museum is null ? Results.NotFound() : Results.Ok(museum);
         }).WithName(getMuseumEndpoint);
 
-        group.MapPost("/", async (CreateMuseumDTO createdMuseum, IMuseumsService museumsService) =>
+        group.MapPost("/", async (CreateMuseumDto createdMuseum, IMuseumsService museumsService) =>
         {
             var museum = await museumsService.CreateMuseum(createdMuseum);
             return Results.CreatedAtRoute(getMuseumEndpoint, new { Id = museum.Id }, museum);
         });
 
-        group.MapPut("/{Id}", async (int Id, UpdateMuseumDTO updatedMuseum, IMuseumsService museumsService) =>
+        group.MapPut("/{id:int}", async (int id, UpdateMuseumDto updatedMuseum, IMuseumsService museumsService) =>
         {
-            var existingMuseum = await museumsService.UpdateMuseum(Id, updatedMuseum);
-
-            if (!existingMuseum)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.NoContent();
+            var existingMuseum = await museumsService.UpdateMuseumById(id, updatedMuseum);
+            return !existingMuseum ? Results.NotFound() : Results.NoContent();
         });
 
-        group.MapDelete("/{Id}", async (int Id, IMuseumsService museumsService) =>
+        group.MapDelete("/{id:int}", async (int id, IMuseumsService museumsService) =>
         {
             try
             {
-                var museum = await museumsService.DeleteMuseum(Id);
-
-                if (!museum)
-                {
-                    return Results.NotFound();
-                }
-
-                return Results.NoContent();
+                var museum = await museumsService.DeleteMuseumById(id);
+                return !museum ? Results.NotFound() : Results.NoContent();
             }
             catch (InvalidOperationException ex)
             {
-
                 return Results.BadRequest(ex.Message);
             }
         });

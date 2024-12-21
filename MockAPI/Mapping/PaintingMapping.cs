@@ -1,13 +1,13 @@
 using MockAPI.Entities;
-using MockAPI.DTOs;
+using MockAPI.Dtos;
 
 namespace MockAPI.Mapping;
 
 public static class PaintingMapping
 {
-    public static PaintingDTO ToPaintingDetailDTO(this Painting painting)
+    public static PaintingDto ToPaintingDetailDto(this Painting painting)
     {
-        return new(
+        return new PaintingDto(
             painting.Id,
             painting.Name,
             painting.Artist.Name,
@@ -15,7 +15,7 @@ public static class PaintingMapping
         );
     }
 
-    public static Painting ToEntity(this CreatePaintingDTO painting)
+    public static Painting ToEntity(this CreatePaintingDto painting)
     {
         return new Painting
         {
@@ -25,7 +25,7 @@ public static class PaintingMapping
         };
     }
 
-    public static Painting ToEntity(this UpdatePaintingDTO painting, int id)
+    public static Painting ToEntity(this UpdatePaintingDto painting, int id)
     {
         return new Painting
         {
