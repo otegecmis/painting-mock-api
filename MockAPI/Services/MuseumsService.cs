@@ -8,9 +8,9 @@ namespace MockAPI.Services;
 
 public class MuseumsService : IMuseumsService
 {
-    private readonly PaintingContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public MuseumsService(PaintingContext context)
+    public MuseumsService(ApplicationDbContext context)
     {
         _context = context;
     }

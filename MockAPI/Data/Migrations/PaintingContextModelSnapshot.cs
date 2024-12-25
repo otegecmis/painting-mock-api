@@ -8,7 +8,7 @@ using MockAPI.Data;
 
 namespace MockAPI.Data.Migrations
 {
-    [DbContext(typeof(PaintingContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     partial class PaintingContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

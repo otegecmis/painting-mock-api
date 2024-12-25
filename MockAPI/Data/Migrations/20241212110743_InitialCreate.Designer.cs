@@ -9,7 +9,7 @@ using MockAPI.Data;
 
 namespace MockAPI.Data.Migrations
 {
-    [DbContext(typeof(PaintingContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20241212110743_InitialCreate")]
     partial class InitialCreate
     {

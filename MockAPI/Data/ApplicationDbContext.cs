@@ -3,7 +3,7 @@ using MockAPI.Entities;
 
 namespace MockAPI.Data;
 
-public class PaintingContext(DbContextOptions<PaintingContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Painting> Paintings => Set<Painting>();
     public DbSet<Artist> Artists => Set<Artist>();

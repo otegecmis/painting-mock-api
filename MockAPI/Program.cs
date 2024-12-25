@@ -5,7 +5,7 @@ using MockAPI.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("PaintingMockAPI");
 
-builder.Services.AddSqlite<PaintingContext>(connectionString);
+builder.Services.AddSqlite<ApplicationDbContext>(connectionString);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

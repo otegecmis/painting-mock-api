@@ -8,9 +8,9 @@ namespace MockAPI.Services;
 
 public class ArtistsService : IArtistsService
 {
-    private readonly PaintingContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public ArtistsService(PaintingContext context)
+    public ArtistsService(ApplicationDbContext context)
     {
         _context = context;
     }
