@@ -9,9 +9,9 @@
 git clone https://github.com/otegecmis/painting-mock-api.git
 ```
 
-2. Navigate to the MockAPI directory.
+2. Navigate to the `Painting.MockAPI` directory.
 ```sh
-cd painting-mock-api/MockAPI
+cd painting-mock-api/Painting.MockAPI
 ```
 
 3. Restore dependencies.
