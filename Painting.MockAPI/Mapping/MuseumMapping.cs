@@ -1,4 +1,5 @@
-using Painting.MockAPI.Dtos;
+using Painting.MockAPI.Dtos.Artwork;
+using Painting.MockAPI.Dtos.Museum;
 using Painting.MockAPI.Entities;
 
 namespace Painting.MockAPI.Mapping;
@@ -10,28 +11,11 @@ public static class MuseumMapping
         return new MuseumDto(
             museum.Id,
             museum.Name,
-            museum.Paintings.Select(painting => new PaintingWithoutMuseumDto(
-                painting.Id,
-                painting.Name,
-                painting.Artist.Name
+            museum.Artworks.Select(artwork => new ArtworkWithoutMuseumDto(
+                artwork.Id,
+                artwork.Name,
+                artwork.Artist.Name
             )).ToList()
         );
-    }
-
-    public static Museum ToEntity(this CreateMuseumDto museum)
-    {
-        return new Museum()
-        {
-            Name = museum.Name
-        };
-    }
-
-    public static Museum ToEntity(this UpdateMuseumDto updatedMuseum, int id)
-    {
-        return new Museum()
-        {
-            Id = id,
-            Name = updatedMuseum.Name
-        };
     }
 }
