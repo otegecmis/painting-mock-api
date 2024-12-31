@@ -15,6 +15,16 @@ public static class ArtworkMapping
         );
     }
 
+    public static Artwork ToEntity(this CreateArtworkDto artwork)
+    {
+        return new Artwork()
+        {
+            Name = artwork.Name,
+            ArtistId = artwork.ArtistId,
+            MuseumId = artwork.MuseumId
+        };
+    }
+
     public static Artwork ToEntity(this UpdateArtworkDto artwork, int id)
     {
         return new Artwork

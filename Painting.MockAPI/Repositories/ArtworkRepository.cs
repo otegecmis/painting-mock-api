@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using Painting.MockAPI.Data;
 using Painting.MockAPI.Dtos.Artwork;
 using Painting.MockAPI.Entities;
 using Painting.MockAPI.Interfaces;
 using Painting.MockAPI.Mapping;
+using Microsoft.EntityFrameworkCore;
 
 namespace Painting.MockAPI.Repositories;
 
@@ -28,19 +28,42 @@ public class ArtworkRepository(ApplicationDbContext context) : IArtworkRepositor
 
     public async Task<Artwork> Create(Artwork createdArtwork)
     {
+        var artist = await context.Artists.FindAsync(createdArtwork.ArtistId);
+
+        if (artist is null)
+        {
+            throw new InvalidOperationException($"Artist not found.");
+        }
+
+        var museum = await context.Museums.FindAsync(createdArtwork.MuseumId);
+
+        if (museum is null)
+        {
+            throw new InvalidOperationException($"Museum not found.");
+        }
+
         context.Artworks.Add(createdArtwork);
         await context.SaveChangesAsync();
 
-        return createdArtwork;
+        return await context.Artworks
+            .Include(artwork => artwork.Artist)
+            .Include(artwork => artwork.Museum)
+            .FirstAsync(artwork => artwork.Id == createdArtwork.Id);
     }
 
-    public async Task<Artwork?> UpdateById(int id, UpdateArtworkDto updatedArtwork)
+    public async Task<Artwork?> UpdateById(int id, Artwork updatedArtwork)
     {
-        var existingArtwork = await context.Artworks.FindAsync(id);
+        var existingArtwork = await context.Artworks
+            .Include(artwork => artwork.Artist)
+            .Include(artwork => artwork.Museum)
+            .FirstOrDefaultAsync(artwork => artwork.Id == id);
 
         if (existingArtwork is null) return null;
 
-        context.Entry(existingArtwork).CurrentValues.SetValues(updatedArtwork.ToEntity(id));
+        existingArtwork.Name = updatedArtwork.Name;
+        existingArtwork.ArtistId = updatedArtwork.ArtistId;
+        existingArtwork.MuseumId = updatedArtwork.MuseumId;
+
         await context.SaveChangesAsync();
 
         return existingArtwork;

@@ -1,12 +1,12 @@
 using Painting.MockAPI.Dtos.Artwork;
-using Painting.MockAPI.Entities;
 using Painting.MockAPI.Interfaces;
+using Painting.MockAPI.Mapping;
 
 namespace Painting.MockAPI.Endpoints;
 
 public static class ArtworksEndpoints
 {
-    private const string GetPaintingEndpoint = "GetPainting";
+    private const string GetArtworkEndpoint = "GetArtwork";
 
     public static RouteGroupBuilder MapArtworksEndpoints(this WebApplication app)
     {
@@ -22,21 +22,29 @@ public static class ArtworksEndpoints
         group.MapGet("/{id:int}", async (int id, IArtworkRepository artworkRepository) =>
         {
             var artwork = await artworkRepository.GetById(id);
-            return artwork is null ? Results.NotFound() : Results.Ok(artwork);
-        }).WithName(GetPaintingEndpoint);
+            return artwork is null ? Results.NotFound() : Results.Ok(artwork.ToArtworkDetailDto());
+        }).WithName(GetArtworkEndpoint);
 
-        group.MapPost("/", async (Artwork createdPainting, IArtworkRepository artworkRepository) =>
+        group.MapPost("/", async (CreateArtworkDto createdArtwork, IArtworkRepository artworkRepository) =>
         {
-            var artworks = await artworkRepository.Create(createdPainting);
-            return Results.CreatedAtRoute(GetPaintingEndpoint, new { Id = artworks.Id }, artworks);
+            try
+            {
+                var artworks = await artworkRepository.Create(createdArtwork.ToEntity());
+                return Results.CreatedAtRoute(GetArtworkEndpoint, new { artworks.Id }, artworks);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
         });
 
-        group.MapPut("/{id:int}",
-            async (int id, UpdateArtworkDto updatedArtwork, IArtworkRepository artworkRepository) =>
-            {
-                var artwork = await artworkRepository.UpdateById(id, updatedArtwork);
-                return artwork is null ? Results.NotFound() : Results.Ok(artwork);
-            });
+        group.MapPut("/{id:int}", async (int id, UpdateArtworkDto updatedArtwork, IArtworkRepository artworkRepository) =>
+        {
+            var artwork = await artworkRepository.UpdateById(id, updatedArtwork.ToEntity(id));
+            if (artwork is null) return Results.NotFound();
+
+            return Results.Ok(artwork.ToArtworkDetailDto());
+        });
 
         group.MapDelete("/{id:int}", async (int id, IArtworkRepository artworkRepository) =>
         {

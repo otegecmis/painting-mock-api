@@ -8,6 +8,6 @@ public interface IArtworkRepository
     Task<List<ArtworkDto>> GetAll();
     Task<Artwork?> GetById(int id);
     Task<Artwork> Create(Artwork createdArtwork);
-    Task<Artwork?> UpdateById(int id, UpdateArtworkDto updatedArtwork);
+    Task<Artwork?> UpdateById(int id, Artwork updatedArtwork);
     Task<Artwork?> DeleteById(int id);
 }
