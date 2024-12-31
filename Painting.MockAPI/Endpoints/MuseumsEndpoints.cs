@@ -1,6 +1,6 @@
 using Painting.MockAPI.Dtos.Museum;
-using Painting.MockAPI.Entities;
 using Painting.MockAPI.Interfaces;
+using Painting.MockAPI.Mapping;
 
 namespace Painting.MockAPI.Endpoints;
 
@@ -22,26 +22,30 @@ public static class MuseumsEndpoints
         group.MapGet("/{id:int}", async (int id, IMuseumRepository museumRepository) =>
         {
             var museum = await museumRepository.GetById(id);
-            return museum is null ? Results.NotFound() : Results.Ok(museum);
+            return museum is null ? Results.NotFound() : Results.Ok(museum.ToMuseumDetailDto());
         }).WithName(GetMuseumEndpoint);
 
-        group.MapPost("/", async (Museum createdMuseum, IMuseumRepository museumRepository) =>
+        group.MapPost("/", async (CreateMuseumDto createdMuseum, IMuseumRepository museumRepository) =>
         {
-            var museum = await museumRepository.Create(createdMuseum);
-            return Results.CreatedAtRoute(GetMuseumEndpoint, new { museum.Id }, museum);
+            var museum = await museumRepository.Create(createdMuseum.ToEntity());
+            return Results.CreatedAtRoute(GetMuseumEndpoint, new { museum.Id }, museum.ToMuseumWithoutArtworksDto());
         });
 
-        group.MapPut("/{id:int}",
-            async (int id, UpdateMuseumDto updatedMuseumDto, IMuseumRepository museumRepository) =>
-            {
-                var museum = await museumRepository.UpdateById(id, updatedMuseumDto);
-                return museum is null ? Results.NotFound() : Results.Ok(museum);
-            });
+        group.MapPut("/{id:int}", async (int id, UpdateMuseumDto updatedMuseum, IMuseumRepository museumRepository) =>
+        {
+            var museum = await museumRepository.UpdateById(id, updatedMuseum.ToEntity(id));
+            return museum is null ? Results.NotFound() : Results.Ok(museum.ToMuseumWithoutArtworksDto());
+        });
 
         group.MapDelete("/{id:int}", async (int id, IMuseumRepository museumRepository) =>
         {
-            var museum = await museumRepository.DeleteById(id);
-            return museum is null ? Results.NotFound() : Results.NoContent();
+            var museum = await museumRepository.GetById(id);
+
+            if (museum is null) return Results.NotFound();
+            if (museum!.Artworks.Count > 0) return Results.BadRequest();
+
+            var deletedMuseum = await museumRepository.DeleteById(id);
+            return deletedMuseum is null ? Results.NotFound() : Results.NoContent();
         });
 
         return group;

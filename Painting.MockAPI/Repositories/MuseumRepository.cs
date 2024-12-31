@@ -35,7 +35,7 @@ public class MuseumRepository(ApplicationDbContext context) : IMuseumRepository
         return createdMuseum;
     }
 
-    public async Task<Museum?> UpdateById(int id, UpdateMuseumDto updatedMuseum)
+    public async Task<Museum?> UpdateById(int id, Museum updatedMuseum)
     {
         var existingMuseum = await context.Museums.FindAsync(id);
 

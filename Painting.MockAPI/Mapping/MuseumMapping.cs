@@ -18,4 +18,29 @@ public static class MuseumMapping
             )).ToList()
         );
     }
+
+    public static MuseumSummaryDto ToMuseumWithoutArtworksDto(this Museum museum)
+    {
+        return new MuseumSummaryDto(
+            museum.Id,
+            museum.Name
+        );
+    }
+
+    public static Museum ToEntity(this CreateMuseumDto museum)
+    {
+        return new Museum()
+        {
+            Name = museum.Name
+        };
+    }
+
+    public static Museum ToEntity(this UpdateMuseumDto museum, int id)
+    {
+        return new Museum()
+        {
+            Id = id,
+            Name = museum.Name
+        };
+    }
 }
