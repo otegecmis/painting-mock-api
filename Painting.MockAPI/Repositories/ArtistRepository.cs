@@ -21,7 +21,8 @@ public class ArtistRepository(ApplicationDbContext context) : IArtistRepository
 
     public async Task<Artist?> GetById(int id)
     {
-        return await context.Artists.FindAsync(id);
+        return await context.Artists.Include(artist => artist.Artworks).ThenInclude(artist => artist.Museum)
+            .FirstOrDefaultAsync(artist => artist.Id == id);
     }
 
     public async Task<Artist> Create(Artist createdArtist)
@@ -32,7 +33,7 @@ public class ArtistRepository(ApplicationDbContext context) : IArtistRepository
         return createdArtist;
     }
 
-    public async Task<Artist?> UpdateById(int id, UpdateArtistDto updatedArtist)
+    public async Task<Artist?> UpdateById(int id, Artist updatedArtist)
     {
         var existingArtist = await context.Artists.FindAsync(id);
 

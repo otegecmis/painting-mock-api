@@ -1,6 +1,6 @@
 using Painting.MockAPI.Dtos.Artist;
-using Painting.MockAPI.Entities;
 using Painting.MockAPI.Interfaces;
+using Painting.MockAPI.Mapping;
 
 namespace Painting.MockAPI.Endpoints;
 
@@ -22,25 +22,30 @@ public static class ArtistsEndpoints
         group.MapGet("/{id:int}", async (int id, IArtistRepository artistRepository) =>
         {
             var artist = await artistRepository.GetById(id);
-            return artist is null ? Results.NotFound() : Results.Ok(artist);
+            return artist is null ? Results.NotFound() : Results.Ok(artist.ToArtistDetailDto());
         }).WithName(GetArtistEndpoint);
 
-        group.MapPost("/", async (Artist createdArtist, IArtistRepository artistRepository) =>
+        group.MapPost("/", async (CreateArtistDto createdArtist, IArtistRepository artistRepository) =>
         {
-            var artist = await artistRepository.Create(createdArtist);
-            return Results.CreatedAtRoute(GetArtistEndpoint, new { artist.Id }, artist);
+            var artist = await artistRepository.Create(createdArtist.ToEntity());
+            return Results.CreatedAtRoute(GetArtistEndpoint, new { artist.Id }, artist.ToArtistWithoutArtworksDto());
         });
 
         group.MapPut("/{id:int}", async (int id, UpdateArtistDto updatedArtist, IArtistRepository artistRepository) =>
         {
-            var artist = await artistRepository.UpdateById(id, updatedArtist);
-            return artist is null ? Results.NotFound() : Results.Ok(artist);
+            var artist = await artistRepository.UpdateById(id, updatedArtist.ToEntity(id));
+            return artist is null ? Results.NotFound() : Results.Ok(artist.ToArtistWithoutArtworksDto());
         });
 
         group.MapDelete("/{id:int}", async (int id, IArtistRepository artistRepository) =>
         {
-            var artist = await artistRepository.DeleteById(id);
-            return artist is null ? Results.NotFound() : Results.NoContent();
+            var artist = await artistRepository.GetById(id);
+
+            if (artist == null) return Results.NotFound();
+            if (artist!.Artworks.Count > 0) return Results.BadRequest();
+
+            var deletedArtist = await artistRepository.DeleteById(id);
+            return deletedArtist is null ? Results.NotFound() : Results.NoContent();
         });
 
         return group;
