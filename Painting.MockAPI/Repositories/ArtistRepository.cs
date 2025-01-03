@@ -13,7 +13,7 @@ public class ArtistRepository(ApplicationDbContext context) : IArtistRepository
     {
         return await context.Artists
             .Include(artist => artist.Artworks)
-            .ThenInclude(painting => painting.Museum)
+            .ThenInclude(artwork => artwork.Museum)
             .AsNoTracking()
             .Select(artist => artist.ToArtistDetailDto())
             .ToListAsync();
@@ -21,7 +21,9 @@ public class ArtistRepository(ApplicationDbContext context) : IArtistRepository
 
     public async Task<Artist?> GetById(int id)
     {
-        return await context.Artists.Include(artist => artist.Artworks).ThenInclude(artist => artist.Museum)
+        return await context.Artists
+            .Include(artist => artist.Artworks)
+            .ThenInclude(artwork => artwork.Museum)
             .FirstOrDefaultAsync(artist => artist.Id == id);
     }
 

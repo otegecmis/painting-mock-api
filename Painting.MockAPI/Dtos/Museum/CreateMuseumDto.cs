@@ -1,3 +1,7 @@
 namespace Painting.MockAPI.Dtos.Museum;
 
-public record class CreateMuseumDto(string Name);
+using System.ComponentModel.DataAnnotations;
+
+public record CreateMuseumDto(
+    [Required] [StringLength(100)] string Name
+);

@@ -2,7 +2,7 @@ using Painting.MockAPI.Dtos.Artwork;
 
 namespace Painting.MockAPI.Dtos.Artist;
 
-public record class ArtistDto
+public record ArtistDto
 {
     public int Id { get; set; }
     public string Name { get; set; }

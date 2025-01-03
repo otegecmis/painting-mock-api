@@ -11,7 +11,7 @@ public static class MuseumsEndpoints
     public static RouteGroupBuilder MapMuseumsEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("museums");
-        group.WithTags("museums");
+        group.WithTags("museums").WithParameterValidation();
 
         group.MapGet("/", async (IMuseumRepository museumRepository) =>
         {

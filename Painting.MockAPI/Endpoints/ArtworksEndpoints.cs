@@ -11,7 +11,7 @@ public static class ArtworksEndpoints
     public static RouteGroupBuilder MapArtworksEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("artworks");
-        group.WithTags("Artworks");
+        group.WithTags("artworks").WithParameterValidation();
 
         group.MapGet("/", async (IArtworkRepository artworkRepository) =>
         {
