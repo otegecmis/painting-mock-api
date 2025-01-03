@@ -29,7 +29,7 @@ public static class ArtistMapping
 
     public static Artist ToEntity(this CreateArtistDto artist)
     {
-        return new Artist()
+        return new Artist
         {
             Name = artist.Name
         };
@@ -37,7 +37,7 @@ public static class ArtistMapping
 
     public static Artist ToEntity(this UpdateArtistDto updatedArtist, int id)
     {
-        return new Artist()
+        return new Artist
         {
             Id = id,
             Name = updatedArtist.Name

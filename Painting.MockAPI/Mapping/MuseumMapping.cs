@@ -29,7 +29,7 @@ public static class MuseumMapping
 
     public static Museum ToEntity(this CreateMuseumDto museum)
     {
-        return new Museum()
+        return new Museum
         {
             Name = museum.Name
         };
@@ -37,7 +37,7 @@ public static class MuseumMapping
 
     public static Museum ToEntity(this UpdateMuseumDto museum, int id)
     {
-        return new Museum()
+        return new Museum
         {
             Id = id,
             Name = museum.Name

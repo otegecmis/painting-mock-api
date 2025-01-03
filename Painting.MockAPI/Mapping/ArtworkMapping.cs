@@ -17,7 +17,7 @@ public static class ArtworkMapping
 
     public static Artwork ToEntity(this CreateArtworkDto artwork)
     {
-        return new Artwork()
+        return new Artwork
         {
             Name = artwork.Name,
             ArtistId = artwork.ArtistId,

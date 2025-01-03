@@ -1,9 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using Painting.MockAPI.Data;
 using Painting.MockAPI.Dtos.Artwork;
 using Painting.MockAPI.Entities;
 using Painting.MockAPI.Interfaces;
 using Painting.MockAPI.Mapping;
-using Microsoft.EntityFrameworkCore;
 
 namespace Painting.MockAPI.Repositories;
 
@@ -30,17 +30,11 @@ public class ArtworkRepository(ApplicationDbContext context) : IArtworkRepositor
     {
         var artist = await context.Artists.FindAsync(createdArtwork.ArtistId);
 
-        if (artist is null)
-        {
-            throw new InvalidOperationException($"Artist not found.");
-        }
+        if (artist is null) throw new InvalidOperationException("Artist not found.");
 
         var museum = await context.Museums.FindAsync(createdArtwork.MuseumId);
 
-        if (museum is null)
-        {
-            throw new InvalidOperationException($"Museum not found.");
-        }
+        if (museum is null) throw new InvalidOperationException("Museum not found.");
 
         context.Artworks.Add(createdArtwork);
         await context.SaveChangesAsync();
